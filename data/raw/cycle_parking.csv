@@ -1,0 +1,35 @@
+﻿name_anlage,adresse,latitude,longitude,abstellplaetze,bei_p+r_anlage,bauform,oepnv-anbindung
+Allach,"Oertelplatz (2), 80999 München","48°11'24.4""N","11°28'03.8""E",374,x,DF,S-Bahn
+Amalienburgstraße,"Menzinger/Schragenhofstr., 80638 Mü","48°09'56.7""N","11°29'35.9""E",64,,DF,Tram
+Aubing,"Colmdorfstr. (32), 81249 Mü","48°09'21.8""N","11°24'49.6""E",56,x,DF,S-Bahn
+Berg am Laim,"Truderinger Str. (47), 81673 München","48°08'01.4""N","11°38'00.2""E",154,,DF,S-Bahn
+Daglfing,"Ludwig-Brück-Str. 3a, 81929 München","48°08'54.0""N","11°38'59.2""E",122,x,EF,S-Bahn
+Feldmoching,"Dülferstr. (69), 80995 München","48°12'49.6""N","11°32'31.7""E",80,x,DF,U-/S-Bahn
+Fürstenried West,"Steinkirchner Str., 81475 München","48°05'18.6""N","11°28'45.1""E",96,x,DF,U-Bahn
+Giesing,"Ungsteiner Str., 81539 München","48°06'41.4""N","11°35'48.8""E",63,,DF,U-/S-Bahn
+Großhadern (Klinikum) bei P+R,"Max-Lebsche-Platz, 81377 München","48°06'30.4""N","11°28'20.2""E",40,x,EF,U-Bahn
+Großhadern (Klinikum),"Max-Lebsche-Platz, 81377 München","48°06'33.9""N","11°28'29.8""E",96,x,DF,U-Bahn
+Karlsfeld Ost,"Zum Schwabenbächl (33), 80997 München","48°12'40.9""N","11°27'37.8""E",226,x,EF,S-Bahn
+Karlsfeld West,"Eversbuschstr. (260), 80999 Mü","48°12'40.0""N","11°27'33.5""E",86,x,EF,S-Bahn
+Kieferngarten,"Kieferngartenstr. 16, 80939 München","48°12'12.3""N","11°36'46.3""E",280,x,DF,U-Bahn
+Laimer Platz,"Laimer Platz, 80689 München","48°08'05.7""N","11°29'58.8""E",48,,DF,U-Bahn
+Langwied,"Bergsonstr. (100), 81245 Mü","48°09'47.3""N","11°25'57.0""E",80,x,EF,S-Bahn
+Lochhausen-Nord,"Lochhausener Str. 215, 81249 München","48°10'37.0""N","11°24'28.6""E",313,x,EF,S-Bahn
+Marienhof,"Landschaftsstr., 80331 München","48°08'17.4""N","11°34'35.9""E",124,,DF,U-/S-Bahn
+Messestadt-Ost,"Willy-Brandt-Allee 11, 81829 München","48°08'01.7""N","11°42'17.3""E",77,x,EF,U-Bahn
+Michaelibad,"Heinrich-Wieland-Str. 5, 81735 München","48°07'08.8""N","11°37'49.5""E",50,x,EF,U-Bahn
+Moosach,"Memminger Platz 1, 80997 München","48°10'49.8""N","11°30'21.3""E",360,x,DF,U-/S-Bahn
+Neuperlach Süd,"Carl-Wery-Str./Siemens, 81739 München","48°05'18.6""N","11°38'45.2""E",96,x,DF,U-/S-Bahn
+Nordumgehung Pasing TG,"Pasinger Bahnhofsplatz, 81241 München","48°08'57.6""N","11°27'39.3""E",755,,DF,S-Bahn/DB
+Nordumgehung Pasing Oberfläche,"Josef-Felder-Straße, 81241 München","48°08'58.9""N","11°27'37.1""E",120,,DF,S-Bahn/DB
+Oberwiesenfeld,"Moosacher Str. (95), 80809 München","48°11'09.4""N","11°32'46.3""E",77,x,EF,U-Bahn
+Olympiaeinkaufszentrum,"Hanauer Str. 68, 80993 München","48°11'02.8""N","11°31'54.2""E",392,x,EF,U-Bahn
+Pasing Nord,"Hellihofweg, 81245 München","48°09'02.3""N","11°27'42.1""E",522,,DF,S-Bahn
+Pasing Nord II,"Gottfried-Keller Str. (39), 81245 München","48°09'01.2""N","11°27'46.7""E",62,,DF,S-Bahn
+Perlach,"Stephensonplatz (1), 81737 München","48°05'37.1""N","11°37'49.8""E",50,x,EF,S-Bahn
+Quiddestraße,"Albert-Schweitzer-Str.,  81735 München","48°06'32.0""N","11°38'43.0""E",112,,DF,U-Bahn
+Solln,"Friedastr. (27), 81479 München","48°04'51.0""N","11°31'38.5""E",34,x,EF,S-Bahn
+St.-Quirin-Platz,"St.-Quirin-Platz, 81547 Mü","48°06'14.3""N","11°34'55.2""E",100,,DF,U-Bahn
+Studentenstadt,"Ungererstr. (210), 80805 München","48°11'02.1""N","11°36'27.5""E",10,x,EF,U-Bahn
+Trudering-Nord,"Birthälmerstr. (18), 81829 München","48°07'35.7""N","11°39'49.9""E",269,x,EF,U-/S-Bahn
+Trudering-Süd,"Truderinger Str. (259), 81829 Mü","48°07'33.0""N","11°39'45.0""E",186,x,DF,U-/S-Bahn

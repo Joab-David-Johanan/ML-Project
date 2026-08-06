@@ -14,3 +14,6 @@ wheels/
 
 # Local ML artifacts
 artifacts/
+
+# Raw source bundles (keep extracted data files tracked)
+data/raw/*_WFS.zip
