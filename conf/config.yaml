@@ -1,0 +1,9 @@
+﻿defaults:
+  - data: local
+  - model: baseline
+  - trainer: fast
+  - _self_
+
+project_name: ml-project
+
+

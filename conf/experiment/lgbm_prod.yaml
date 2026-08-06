@@ -1,0 +1,6 @@
+﻿defaults:
+  - override /data: prod
+  - override /model: lgbm
+  - override /trainer: full
+
+

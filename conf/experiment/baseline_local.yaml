@@ -1,0 +1,6 @@
+﻿defaults:
+  - override /data: local
+  - override /model: baseline
+  - override /trainer: fast
+
+

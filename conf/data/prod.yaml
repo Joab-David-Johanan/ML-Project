@@ -1,0 +1,5 @@
+﻿name: prod
+raw_path: s3://your-bucket/raw
+processed_path: s3://your-bucket/processed
+
+
