@@ -15,6 +15,8 @@
 11. [Step 11: Commit workflow used](#step-11-commit-workflow-used)
 12. [Step 12: Libraries added and install commands](#step-12-libraries-added-and-install-commands)
 13. [Step 13: Command glossary](#step-13-command-glossary)
+14. [Step 14: Troubleshooting and validation work done](#step-14-troubleshooting-and-validation-work-done)
+15. [Step 15: Task config defaults and unified validation pipeline](#step-15-task-config-defaults-and-unified-validation-pipeline)
 
 ## Step 1: Initialize project
 
@@ -164,11 +166,13 @@ ML Project/
 │   └── 02_counting_stations.ipynb
 ├── notes/
 │   ├── decisions.md
+│   ├── engineering.md
 │   └── steps.md
 ├── pipelines/
 │   ├── run_forecast.py
 │   ├── run_ingest.py
-│   └── run_train.py
+│   ├── run_train.py
+│   └── run_validate.py
 ├── scripts/
 │   ├── run_dashboard.ps1
 │   └── setup_env.ps1
@@ -519,5 +523,78 @@ Purpose:
 5. `git log --oneline -n 5`
 
    - Shows the latest 5 commits in compact one-line format.
+
+[Back to TOC](#table-of-contents)
+
+## Step 14: Troubleshooting and validation work done
+
+Purpose:
+
+- Capture important engineering work that was actually done but is easy to forget in summaries.
+
+Work completed:
+
+1. Fixed scaffold corruption where files contained literal backtick-n sequences instead of real newlines.
+2. Repaired `forecast_app` import issues caused by typo usage (`forcast_app`) in notebook code.
+3. Verified dataset structure and quality for all major raw files before modeling decisions.
+4. Confirmed station consistency across years and identified the post-2024 station drop.
+5. Added and documented station caveats used for modeling constraints:
+   - Margareten sensor malfunction after construction.
+   - Arnulf direction semantics on non-two-way path.
+6. Verified JSON/GeoJSON validity before using path data in analysis.
+7. Updated README and engineering notes with source citations and claim-safety wording.
+
+Commands used during troubleshooting/validation:
+
+```bash
+# quality/profile checks
+git status --short
+
+# ingest verification
+uv run python pipelines/run_ingest.py
+
+# lint/format consistency
+uv run ruff check . --fix
+uv run ruff format .
+```
+
+[Back to TOC](#table-of-contents)
+
+## Step 15: Task config defaults and unified validation pipeline
+
+Purpose:
+
+- Freeze forecasting task assumptions in config and enforce consistent validation behavior across all data domains.
+
+What was implemented:
+
+1. Added task defaults in `conf/config.yaml`:
+   - type: time-series regression
+   - target: `gesamt`
+   - time key: `datum`
+   - station key: `zaehlstelle`
+   - horizons: 1-day and 7-day
+   - split: rolling window
+   - metrics: MAE, RMSE, MAPE
+2. Added explicit processed input contracts in:
+   - `conf/data/local.yaml`
+   - `conf/data/prod.yaml`
+3. Implemented strict validation checks in `src/forecast_app/data/validate.py`:
+   - hard checks raise exceptions
+   - warning checks are returned as `issues`
+   - all `_validate_*` functions now follow the same contract
+4. Added dedicated pipeline runner:
+   - `pipelines/run_validate.py`
+
+Run command:
+
+```bash
+uv run python pipelines/run_validate.py
+```
+
+Current observed behavior:
+
+1. Validation fails correctly on hard data issues.
+2. Current failure in daily counts: null values in `gesamt`.
 
 [Back to TOC](#table-of-contents)
