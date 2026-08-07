@@ -1,4 +1,2 @@
-﻿def run() -> None:
+def run() -> None:
     print("Evaluate step placeholder")
-
-

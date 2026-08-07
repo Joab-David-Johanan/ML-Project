@@ -1,4 +1,2 @@
-﻿def run() -> None:
+def run() -> None:
     print("Dashboard placeholder")
-
-

@@ -1,4 +1,4 @@
-﻿"""Application runtime settings (env-driven)."""
+"""Application runtime settings (env-driven)."""
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -16,4 +16,3 @@ class AppSettings(BaseSettings):
 
 
 settings = AppSettings()
-

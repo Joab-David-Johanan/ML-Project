@@ -1,3 +1,1 @@
-﻿"""Forecast app package."""
-
-
+"""Forecast app package."""
