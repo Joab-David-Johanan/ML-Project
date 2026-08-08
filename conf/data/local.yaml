@@ -3,13 +3,13 @@ raw_path: data/raw
 processed_path: data/processed
 
 inputs:
-	cycle_counts:
-		day_csv: cycle_counts/cycle_count_day.csv
-		quarter_hour_csv: cycle_counts/cycle_count_15.csv
-		stations_csv: cycle_counts/counting_stations.csv
-	cycle_parking:
-		sites_csv: cycle_parking/parking_sites.csv
-	cycle_paths:
-		segments_csv: cycle_paths/path_segments.csv
+  cycle_counts:
+    day_parquet: cycle_counts/cycle_count_day.parquet
+    quarter_hour_parquet: cycle_counts/cycle_count_15.parquet
+    stations_parquet: cycle_counts/counting_stations.parquet
+  cycle_parking:
+    sites_parquet: cycle_parking/parking_sites.parquet
+  cycle_paths:
+    segments_parquet: cycle_paths/path_segments.parquet
 
 

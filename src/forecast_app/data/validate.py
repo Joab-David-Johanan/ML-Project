@@ -99,7 +99,7 @@ def _assert_daily_continuity(day_df: pd.DataFrame) -> list[ValidationIssue]:
     if work["date"].isnull().any():
         bad = int(work["date"].isnull().sum())
         raise ValueError(
-            f"cycle_count_day.csv: failed to parse {bad} rows in 'datum' as %Y.%m.%d"
+            f"cycle_count_day.parquet: failed to parse {bad} rows in 'datum' as %Y.%m.%d"
         )
 
     for station, grp in work.groupby("zaehlstelle"):
@@ -111,16 +111,16 @@ def _assert_daily_continuity(day_df: pd.DataFrame) -> list[ValidationIssue]:
             issues.append(
                 ValidationIssue(
                     level="warning",
-                    message=f"cycle_count_day.csv: station '{station}' has date gaps up to {max_gap} day(s)",
+                    message=f"cycle_count_day.parquet: station '{station}' has date gaps up to {max_gap} day(s)",
                 )
             )
     return issues
 
 
 def _validate_cycle_counts(base: Path) -> list[ValidationIssue]:
-    day_path = base / "cycle_counts" / "cycle_count_day.csv"
-    qh_path = base / "cycle_counts" / "cycle_count_15.csv"
-    stations_path = base / "cycle_counts" / "counting_stations.csv"
+    day_path = base / "cycle_counts" / "cycle_count_day.parquet"
+    qh_path = base / "cycle_counts" / "cycle_count_15.parquet"
+    stations_path = base / "cycle_counts" / "counting_stations.parquet"
 
     for path in [day_path, qh_path, stations_path]:
         if not path.exists():
@@ -128,48 +128,62 @@ def _validate_cycle_counts(base: Path) -> list[ValidationIssue]:
                 f"Missing required processed cycle counts file: {path}"
             )
 
-    day_df = pd.read_csv(day_path)
-    qh_df = pd.read_csv(qh_path)
-    stations_df = pd.read_csv(stations_path)
+    day_df = pd.read_parquet(day_path)
+    qh_df = pd.read_parquet(qh_path)
+    stations_df = pd.read_parquet(stations_path)
 
-    validate_dataframe_contract(day_df, CycleCountDayContract, "cycle_count_day.csv")
-    validate_dataframe_contract(qh_df, CycleCount15Contract, "cycle_count_15.csv")
     validate_dataframe_contract(
-        stations_df, CountingStationsContract, "counting_stations.csv"
+        day_df, CycleCountDayContract, "cycle_count_day.parquet"
+    )
+    validate_dataframe_contract(qh_df, CycleCount15Contract, "cycle_count_15.parquet")
+    validate_dataframe_contract(
+        stations_df, CountingStationsContract, "counting_stations.parquet"
     )
 
-    _assert_no_nulls(day_df, ["datum", "zaehlstelle", "gesamt"], "cycle_count_day.csv")
     _assert_no_nulls(
-        qh_df, ["datum", "uhrzeit_start", "zaehlstelle", "gesamt"], "cycle_count_15.csv"
+        day_df, ["datum", "zaehlstelle", "gesamt"], "cycle_count_day.parquet"
     )
     _assert_no_nulls(
-        stations_df, ["zaehlstelle", "latitude", "longitude"], "counting_stations.csv"
+        qh_df,
+        ["datum", "uhrzeit_start", "zaehlstelle", "gesamt"],
+        "cycle_count_15.parquet",
+    )
+    _assert_no_nulls(
+        stations_df,
+        ["zaehlstelle", "latitude", "longitude"],
+        "counting_stations.parquet",
     )
 
-    _assert_no_duplicates(day_df, ["datum", "zaehlstelle"], "cycle_count_day.csv")
+    _assert_no_duplicates(day_df, ["datum", "zaehlstelle"], "cycle_count_day.parquet")
     _assert_no_duplicates(
-        qh_df, ["datum", "uhrzeit_start", "zaehlstelle"], "cycle_count_15.csv"
+        qh_df,
+        ["datum", "uhrzeit_start", "zaehlstelle"],
+        "cycle_count_15.parquet",
     )
-    _assert_no_duplicates(stations_df, ["zaehlstelle"], "counting_stations.csv")
+    _assert_no_duplicates(stations_df, ["zaehlstelle"], "counting_stations.parquet")
 
     _assert_non_negative(
-        day_df, ["richtung_1", "richtung_2", "gesamt"], "cycle_count_day.csv"
+        day_df, ["richtung_1", "richtung_2", "gesamt"], "cycle_count_day.parquet"
     )
     _assert_non_negative(
-        qh_df, ["richtung_1", "richtung_2", "gesamt"], "cycle_count_15.csv"
+        qh_df,
+        ["richtung_1", "richtung_2", "gesamt"],
+        "cycle_count_15.parquet",
     )
 
     lat = pd.to_numeric(stations_df["latitude"], errors="coerce")
     lon = pd.to_numeric(stations_df["longitude"], errors="coerce")
     if lat.isnull().any() or lon.isnull().any():
         raise ValueError(
-            "counting_stations.csv: latitude/longitude contain non-numeric values"
+            "counting_stations.parquet: latitude/longitude contain non-numeric values"
         )
     if ((lat < -90) | (lat > 90)).any():
-        raise ValueError("counting_stations.csv: latitude out of valid range [-90, 90]")
+        raise ValueError(
+            "counting_stations.parquet: latitude out of valid range [-90, 90]"
+        )
     if ((lon < -180) | (lon > 180)).any():
         raise ValueError(
-            "counting_stations.csv: longitude out of valid range [-180, 180]"
+            "counting_stations.parquet: longitude out of valid range [-180, 180]"
         )
 
     day_stations = set(day_df["zaehlstelle"].astype(str).str.strip().unique())
@@ -199,7 +213,7 @@ def _validate_contract_file(
         raise FileNotFoundError(
             f"Missing required processed file for {dataset_name}: {file_path}"
         )
-    df = pd.read_csv(file_path)
+    df = pd.read_parquet(file_path)
     if df.empty:
         raise ValueError(f"{dataset_name}: file is empty: {file_path}")
     _assert_required_columns(df, required_columns, dataset_name)
@@ -208,21 +222,21 @@ def _validate_contract_file(
 
 def _validate_parking_and_paths(base: Path) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
-    parking_path = base / "cycle_parking" / "parking_sites.csv"
-    paths_path = base / "cycle_paths" / "path_segments.csv"
+    parking_path = base / "cycle_parking" / "parking_sites.parquet"
+    paths_path = base / "cycle_paths" / "path_segments.parquet"
 
     issues.extend(
         _validate_contract_file(
             parking_path,
             {"site_id", "latitude", "longitude", "capacity_total"},
-            "cycle_parking/parking_sites.csv",
+            "cycle_parking/parking_sites.parquet",
         )
     )
     issues.extend(
         _validate_contract_file(
             paths_path,
             {"segment_id", "length_m", "surface_type", "is_protected"},
-            "cycle_paths/path_segments.csv",
+            "cycle_paths/path_segments.parquet",
         )
     )
     return issues

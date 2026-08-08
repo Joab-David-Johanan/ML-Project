@@ -11,8 +11,8 @@ import pandas as pd
 
 # Root folder containing cycle count raw files organized by year folders.
 RAW_COUNTS_DIR = Path("data/raw/cycle_counts")
-# Folder where final unified outputs are written.
-PROCESSED_COUNTS_DIR = Path("data/processed/cycle_counts")
+# Folder where merged intermediate outputs are written.
+INTERIM_COUNTS_DIR = Path("data/interim/cycle_counts")
 # Historical folder that already contains combined files for 2017-2024.
 HISTORICAL_DIR = RAW_COUNTS_DIR / "2017_2024"
 # Canonical counting station metadata file with location reference.
@@ -118,23 +118,19 @@ def _merge_files(csv_files: Iterable[Path]) -> pd.DataFrame:
     return merged
 
 
-# Write one dataframe as CSV and Parquet in the processed output folder.
+# Write one dataframe as Parquet in the interim output folder.
 def _write_outputs(df: pd.DataFrame, basename: str) -> None:
     # Ensure output directory exists before writing files.
-    PROCESSED_COUNTS_DIR.mkdir(parents=True, exist_ok=True)
+    INTERIM_COUNTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Build output CSV path.
-    csv_path = PROCESSED_COUNTS_DIR / f"{basename}.csv"
     # Build output Parquet path.
-    parquet_path = PROCESSED_COUNTS_DIR / f"{basename}.parquet"
+    parquet_path = INTERIM_COUNTS_DIR / f"{basename}.parquet"
 
-    # Always write CSV output for compatibility.
-    df.to_csv(csv_path, index=False)
-    # Write Parquet output for efficient downstream processing.
+    # Write Parquet output only for efficient downstream processing.
     df.to_parquet(parquet_path, index=False)
 
 
-# Load and export counting station metadata into processed outputs.
+# Load and export counting station metadata into interim outputs.
 def _export_counting_stations() -> None:
     # Skip export gracefully when source metadata file is missing.
     if not COUNTING_STATIONS_FILE.exists():
@@ -150,7 +146,7 @@ def _export_counting_stations() -> None:
         if stations[col].dtype == object:
             stations[col] = stations[col].astype(str).str.strip()
 
-    # Write normalized station metadata to processed in CSV + Parquet.
+    # Write normalized station metadata to interim Parquet.
     _write_outputs(stations, "counting_stations")
     print(f"Exported counting stations rows: {len(stations)}")
 
@@ -196,7 +192,7 @@ def run() -> None:
         # Print a warning when no 15-minute data could be loaded.
         print("No 15-minute files found for 2017-2026 merge.")
     else:
-        # Write unified 15-minute dataset to processed CSV + Parquet.
+        # Write unified 15-minute dataset to interim Parquet.
         _write_outputs(merged_15min, "cycle_count_15")
         # Print row count for verification and logging.
         print(f"Merged 15-minute rows: {len(merged_15min)}")
@@ -206,7 +202,7 @@ def run() -> None:
         # Print a warning when no daily data could be loaded.
         print("No daily files found for 2017-2026 merge.")
     else:
-        # Write unified daily dataset to processed CSV + Parquet.
+        # Write unified daily dataset to interim Parquet.
         _write_outputs(merged_day, "cycle_count_day")
         # Print row count for verification and logging.
         print(f"Merged daily rows: {len(merged_day)}")
