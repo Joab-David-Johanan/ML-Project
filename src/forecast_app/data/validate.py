@@ -5,6 +5,12 @@ from pathlib import Path
 
 import pandas as pd
 
+from forecast_app.data.schemas import (
+    CountingStationsContract,
+    CycleCount15Contract,
+    CycleCountDayContract,
+    validate_dataframe_contract,
+)
 from forecast_app.utils.paths import PROJECT_ROOT
 
 
@@ -126,44 +132,10 @@ def _validate_cycle_counts(base: Path) -> list[ValidationIssue]:
     qh_df = pd.read_csv(qh_path)
     stations_df = pd.read_csv(stations_path)
 
-    _assert_required_columns(
-        day_df,
-        {
-            "datum",
-            "uhrzeit_start",
-            "uhrzeit_ende",
-            "zaehlstelle",
-            "richtung_1",
-            "richtung_2",
-            "gesamt",
-        },
-        "cycle_count_day.csv",
-    )
-    _assert_required_columns(
-        qh_df,
-        {
-            "datum",
-            "uhrzeit_start",
-            "uhrzeit_ende",
-            "zaehlstelle",
-            "richtung_1",
-            "richtung_2",
-            "gesamt",
-        },
-        "cycle_count_15.csv",
-    )
-    _assert_required_columns(
-        stations_df,
-        {
-            "zaehlstelle",
-            "zaehlstelle_lang",
-            "latitude",
-            "longitude",
-            "richtung_1",
-            "richtung_2",
-            "besonderheiten",
-        },
-        "counting_stations.csv",
+    validate_dataframe_contract(day_df, CycleCountDayContract, "cycle_count_day.csv")
+    validate_dataframe_contract(qh_df, CycleCount15Contract, "cycle_count_15.csv")
+    validate_dataframe_contract(
+        stations_df, CountingStationsContract, "counting_stations.csv"
     )
 
     _assert_no_nulls(day_df, ["datum", "zaehlstelle", "gesamt"], "cycle_count_day.csv")

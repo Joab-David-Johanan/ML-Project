@@ -15,5 +15,25 @@ wheels/
 # Local ML artifacts
 artifacts/
 
+# Python tool caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Editor / OS noise
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+*.log
+
 # Raw source bundles (keep extracted data files tracked)
 data/raw/*_WFS.zip
