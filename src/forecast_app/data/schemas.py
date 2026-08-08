@@ -104,7 +104,7 @@ def _is_missing_text_value(value: object) -> bool:
 def _is_invalid_numeric_type(value: object) -> bool:
     # bool is intentionally treated as invalid for measurement columns.
     return isinstance(value, (bool, np.bool_, dict, list, tuple, set, bytes))
-~
+
 
 def _coerce_numeric_series(series: pd.Series) -> pd.Series:
     return pd.to_numeric(series, errors="coerce")
