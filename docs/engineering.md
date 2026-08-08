@@ -64,17 +64,17 @@ Why this framing is solid:
 
 1. Use Munich-specific data instead of generic benchmark datasets.
 2. Keep the pipeline reproducible with a clear raw -> processed flow.
-3. Keep two canonical processed count files:
+3. Keep two canonical count outputs at the interim layer until final curation is implemented:
    - cycle_count_15
    - cycle_count_day
-4. Export processed outputs in both CSV and Parquet.
-5. Keep counting station metadata in processed for stable joins.
+4. Use Parquet only for interim and processed layers to avoid duplicate storage and schema drift between file formats.
+5. Keep counting station metadata alongside interim count outputs for stable joins.
 6. Use `cycle_parking_total` as primary parking inventory source.
 7. Document station caveats explicitly:
    - Margaretenstr. (Harras) sensor malfunction after construction.
    - Arnulfstr. direction semantics are station-specific.
 8. Use Ruff for lint/format consistency.
-9. Keep command and engineering notes in `notes/` for repeatable workflow.
+9. Keep command and engineering docs in `docs/` for repeatable workflow.
 
 [Back to TOC](#table-of-contents)
 
@@ -117,7 +117,7 @@ Key engineering principle:
 
 Goal:
 
-- Combine and normalize raw data into model-ready processed datasets.
+- Combine and normalize raw data into reproducible interim datasets before final curated processing.
 
 Current ingestion design:
 
@@ -130,24 +130,21 @@ Current ingestion design:
 4. Concatenate all files by granularity.
 5. Drop exact duplicates.
 6. Sort deterministically.
-7. Write outputs to `data/processed/cycle_counts` as CSV and Parquet.
-8. Export counting stations metadata into processed for join stability.
+7. Write outputs to `data/interim/cycle_counts` as Parquet only.
+8. Export counting stations metadata into interim for join stability.
 
 Key points that matter here:
 
 1. Ingestion is file-driven, not assumption-driven.
 2. Missing or malformed files should fail loudly or be logged clearly.
-3. Processed layer should be deterministic and reproducible.
+3. Interim layer should be deterministic and reproducible.
 4. Keep one canonical output per granularity.
 
 Expected outputs:
 
-1. `cycle_count_15.csv`
-2. `cycle_count_15.parquet`
-3. `cycle_count_day.csv`
-4. `cycle_count_day.parquet`
-5. `counting_stations.csv`
-6. `counting_stations.parquet`
+1. `cycle_count_15.parquet`
+2. `cycle_count_day.parquet`
+3. `counting_stations.parquet`
 
 [Back to TOC](#table-of-contents)
 
@@ -162,17 +159,21 @@ data/raw/
   cycle_parking/
   cycle_paths/
 
-data/processed/
+data/interim/
   cycle_counts/
-    cycle_count_15.(csv|parquet)
-    cycle_count_day.(csv|parquet)
-    counting_stations.(csv|parquet)
+      cycle_count_15.parquet
+      cycle_count_day.parquet
+      counting_stations.parquet
+
+data/processed/
+   cycle_counts/
+      <empty until final curated datasets are built>
 ```
 
 Architecture rationale:
 
 1. Raw is source-of-truth immutable storage.
-2. Processed is cleaned, merged, analysis/model-ready storage.
+2. Interim stores merged normalized outputs; processed is reserved for final curated datasets.
 3. Clear separation simplifies debugging and reproducibility.
 
 [Back to TOC](#table-of-contents)
@@ -190,7 +191,7 @@ Implemented configuration contracts:
    - explicit `_self_` usage for deterministic config composition
    - task contract for target, horizon, split strategy, and metrics
 2. `conf/data/local.yaml` and `conf/data/prod.yaml`
-   - explicit processed input paths for counts, parking, and paths
+   - explicit Parquet input paths for counts, parking, and paths
 
 Implemented validation contracts:
 
@@ -200,6 +201,9 @@ Implemented validation contracts:
    - all `_validate_*` functions now use the same contract style
 2. `pipelines/run_validate.py`
    - dedicated entrypoint to run validation like other pipelines
+3. `src/forecast_app/data/schemas.py`
+   - dataframe contracts for required columns, expected types, and numeric bounds
+   - separate classification for missing values, invalid types, and invalid values
 
 Why this matters:
 
@@ -289,6 +293,8 @@ Important completed work that should be considered part of the engineering journ
 6. Added source citations and tightened wording to avoid unsupported absolute claims.
 7. Added explicit Hydra task defaults and data-profile input contracts.
 8. Standardized validation function behavior and added a dedicated `run_validate` pipeline entrypoint.
+9. Migrated count outputs to interim-only Parquet storage and emptied the processed layer.
+10. Refactored schema-contract tests to idiomatic `pytest` patterns with fixtures and `pytest.raises`.
 
 [Back to TOC](#table-of-contents)
 

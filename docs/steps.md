@@ -17,6 +17,7 @@
 13. [Step 13: Command glossary](#step-13-command-glossary)
 14. [Step 14: Troubleshooting and validation work done](#step-14-troubleshooting-and-validation-work-done)
 15. [Step 15: Task config defaults and unified validation pipeline](#step-15-task-config-defaults-and-unified-validation-pipeline)
+16. [Step 16: Interim parquet-only storage policy](#step-16-interim-parquet-only-storage-policy)
 
 ## Step 1: Initialize project
 
@@ -127,14 +128,12 @@ ML Project/
 ├── data/
 │   ├── external/
 │   ├── interim/
-│   ├── processed/
 │   │   └── cycle_counts/
-│   │       ├── counting_stations.csv
 │   │       ├── counting_stations.parquet
-│   │       ├── cycle_count_15.csv
 │   │       ├── cycle_count_15.parquet
-│   │       ├── cycle_count_day.csv
 │   │       └── cycle_count_day.parquet
+│   └── processed/
+│       └── cycle_counts/
 │   └── raw/
 │       ├── cycle_counts/
 │       │   ├── 2017_2024/
@@ -164,7 +163,7 @@ ML Project/
 ├── notebooks/
 │   ├── 01_eda_br.ipynb
 │   └── 02_counting_stations.ipynb
-├── notes/
+├── docs/
 │   ├── decisions.md
 │   ├── engineering.md
 │   └── steps.md
@@ -186,6 +185,7 @@ ML Project/
 │   │   ├── data/
 │   │   │   ├── ingest.py
 │   │   │   ├── preprocess.py
+│   │   │   ├── schemas.py
 │   │   │   └── validate.py
 │   │   ├── features/
 │   │   │   └── build_features.py
@@ -216,13 +216,13 @@ Brief explanation of each top-level folder:
 1. conf: Hydra and OmegaConf configuration groups for data, model, trainer, and experiments.
 2. data/raw: immutable source files organized by counts, parking, and paths.
 3. data/interim: temporary transformed files.
-4. data/processed: model-ready consolidated outputs (CSV and Parquet).
+4. data/processed: reserved for final curated datasets after missing-value handling, outlier treatment, and feature-stage cleanup.
 5. src/forecast_app: core package where ingest, feature engineering, models, and utilities live.
 6. pipelines: runnable entrypoints for ingest, train, and forecast jobs.
 7. tests: smoke and unit tests.
 8. artifacts: generated outputs such as models, metrics, and reports.
 9. notebooks: exploration and analysis only.
-10. notes: process logs and project decisions.
+10. docs: process logs and project decisions.
 
 [Back to TOC](#table-of-contents)
 
@@ -289,11 +289,11 @@ Brief explanation:
 
 [Back to TOC](#table-of-contents)
 
-## Step 7: Merge cycle count files into processed outputs
+## Step 7: Merge cycle count files into interim outputs
 
 Purpose:
 
-- Convert many yearly/monthly raw count files into two clean analysis-ready datasets.
+- Convert many yearly/monthly raw count files into merged normalized interim datasets before final curation.
 
 Run command:
 
@@ -310,10 +310,8 @@ What this does:
 
 Output files:
 
-1. `data/processed/cycle_counts/cycle_count_15.csv`
-2. `data/processed/cycle_counts/cycle_count_day.csv`
-3. `data/processed/cycle_counts/cycle_count_15.parquet`
-4. `data/processed/cycle_counts/cycle_count_day.parquet`
+1. `data/interim/cycle_counts/cycle_count_15.parquet`
+2. `data/interim/cycle_counts/cycle_count_day.parquet`
 
 [Back to TOC](#table-of-contents)
 
@@ -340,7 +338,7 @@ Brief explanation:
 
 Purpose:
 
-- Keep station location metadata in processed so model and joins always use one canonical reference.
+- Keep station location metadata in interim so later preprocessing and spatial joins use one canonical reference.
 
 Run command:
 
@@ -350,8 +348,7 @@ uv run python pipelines/run_ingest.py
 
 Output files:
 
-1. `data/processed/cycle_counts/counting_stations.csv`
-2. `data/processed/cycle_counts/counting_stations.parquet`
+1. `data/interim/cycle_counts/counting_stations.parquet`
 
 Brief explanation:
 
@@ -491,13 +488,18 @@ Purpose:
 6. `uv run python pipelines/run_ingest.py`
 
    - Runs the ingest pipeline in the project environment.
-   - Produces merged processed outputs from raw cycle count files.
+   - Produces merged interim parquet outputs from raw cycle count files.
 
-7. `uv run ruff check . --fix`
+7. `uv run python pipelines/run_validate.py`
+
+   - Runs the validation pipeline in the project environment.
+   - Applies schema contracts and dataset integrity checks to the configured data layer.
+
+8. `uv run ruff check . --fix`
 
    - Runs lint checks and auto-fixes issues Ruff can fix safely.
 
-8. `uv run ruff format .`
+9. `uv run ruff format .`
 
    - Applies consistent code formatting across the repository.
 
@@ -543,6 +545,7 @@ Work completed:
    - Arnulf direction semantics on non-two-way path.
 6. Verified JSON/GeoJSON validity before using path data in analysis.
 7. Updated README and engineering notes with source citations and claim-safety wording.
+8. Switched tests from manual `try/except` style to idiomatic `pytest.raises` and fixture-based setup.
 
 Commands used during troubleshooting/validation:
 
@@ -585,6 +588,7 @@ What was implemented:
    - all `_validate_*` functions now follow the same contract
 4. Added dedicated pipeline runner:
    - `pipelines/run_validate.py`
+5. Added `src/forecast_app/data/schemas.py` for explicit dataframe contracts and type-aware value classification.
 
 Run command:
 
@@ -596,5 +600,30 @@ Current observed behavior:
 
 1. Validation fails correctly on hard data issues.
 2. Current failure in daily counts: null values in `gesamt`.
+
+[Back to TOC](#table-of-contents)
+
+## Step 16: Interim parquet-only storage policy
+
+Purpose:
+
+- Keep merged intermediate datasets separate from final curated datasets and avoid duplicate CSV artifacts in intermediate layers.
+
+Policy applied:
+
+1. `run_ingest.py` now writes only Parquet outputs.
+2. `data/interim/` holds merged normalized files that are not yet final-model-ready.
+3. `data/processed/` is intentionally left empty until feature engineering and final cleaning are implemented.
+4. Validation and config references were updated to Parquet naming.
+
+Current interim files:
+
+1. `data/interim/cycle_counts/cycle_count_15.parquet`
+2. `data/interim/cycle_counts/cycle_count_day.parquet`
+3. `data/interim/cycle_counts/counting_stations.parquet`
+
+Current processed state:
+
+1. `data/processed/cycle_counts/` exists but is empty by design.
 
 [Back to TOC](#table-of-contents)
